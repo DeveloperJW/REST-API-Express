@@ -14,14 +14,21 @@ const enableGlobalErrorLogging = process.env.ENABLE_GLOBAL_ERROR_LOGGING === 'tr
 const app = express();
 // Connect mongoose to MongoDB and use ES6 Promise
 mongoose.Promise=global.Promise;
-mongoose.connect('mongodb://localhost/fsjstd-restapi',{ useNewUrlParser: true });
+mongoose.connect('mongodb://localhost/fsjstd-restapi',{ useNewUrlParser: true })
+  .then(() => console.log('Connected to MongoDB...'))
+  .catch(err => console.error('Error! Could not connect to MongoDB...'));
+// show message written to console when the connection is successful and fail
+// mongoose.connection.on('connected', ()=>{console.log('Connection Success.')});
+// mongoose.connection.on('error',()=>{console.log('Error! Something went wrong.')});
+// mongoose.connection.on('disconnected',()=>{console.log('Cya!')});
+
 // make sure the req.body is JSON format
 app.use(bodyParser.json());
 
 // setup morgan which gives us http request logging
 app.use(morgan('dev'));
 
-// TODO setup your api routes here
+//Added api routes here
 routes(app);
 
 // setup a friendly greeting for the root route
