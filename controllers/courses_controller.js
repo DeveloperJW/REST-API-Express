@@ -19,7 +19,7 @@ module.exports = {
     // currently, the course variable is null, need to initialize before hashing the password
     const course = new Course(courseProps);
     await course.save();
-    res.status(201).send(course);
+    res.location(`/api/courses/${course._id}`).status(201).send();
   },
   // Promised based syntax, display all courses from database
   listCourses (req, res, next) {
@@ -28,7 +28,8 @@ module.exports = {
 
   async find (req, res) {
     const courseId = req.params.id;
-    const course=await Course.findById(courseId);
+    // use .populate() to achieve the extra credit part 3
+    const course=await Course.findById(courseId).populate('user','firstName lastName');
     if (!course) {
       return res.status(404).send({message: 'There is no course with the given id'});
     }
@@ -45,13 +46,18 @@ module.exports = {
     // check if the userId exists in the database
     const user = await User.findById(courseProps.user);
     if (!user) {
-      return res.status(400).send({message: "There is no such user with given userId."})
+      return res.status(400).send({message: "There is no such user with given userId."});
+    }
+    if (courseProps.user!==req.session.userId){
+      // console.log("User ID: "+courseProps.user);
+      // console.log("Session Id: "+req.session.userId);
+      return res.status(403).send({message: "You do not own the requested course."});
     }
     const course= await Course.findByIdAndUpdate(courseId, courseProps);
     if (!course){
       return res.status(404).send({message: 'There is no course with the given id'});
     }
-    res.status(204).send(course);
+    res.status(204).send();
 
   },
   async delete (req, res) {
@@ -60,6 +66,6 @@ module.exports = {
     if (!course) {
       return res.status(404).send({message: 'There is no course with the given id'});
     }
-    res.status(204).send(course);
+    res.status(204).send();
   },
 }

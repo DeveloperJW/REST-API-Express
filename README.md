@@ -43,3 +43,11 @@ npm start
 ```
 
 To test the Express server, browse to the URL [http://localhost:5000/](http://localhost:5000/).
+
+Note: if you are using postman to test REST API, you need to login by using `POST/http://localhost:5000/login`
+
+- Then you should be able to
+    - GET /api/users
+    - POST /api/courses
+    - PUT /api/courses/:id
+    - DELETE /api/courses/:id
