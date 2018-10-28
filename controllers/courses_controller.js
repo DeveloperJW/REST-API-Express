@@ -1,5 +1,6 @@
 const {Course, validateCourse} = require('../models/course');
 const {User} = require('../models/user');
+const auth=require('basic-auth');
 
 module.exports = {
   greeting (req, res) {
@@ -37,6 +38,7 @@ module.exports = {
   },
 
   async edit (req, res) {
+    const credential=auth(req);
     const courseId = req.params.id;
     const courseProps = req.body;
     const {error} = validateCourse(courseProps);
@@ -48,9 +50,7 @@ module.exports = {
     if (!user) {
       return res.status(400).send({message: "There is no such user with given userId."});
     }
-    if (courseProps.user!==req.session.userId){
-      // console.log("User ID: "+courseProps.user);
-      // console.log("Session Id: "+req.session.userId);
+    if (user.emailAddress!==credential.name){
       return res.status(403).send({message: "You do not own the requested course."});
     }
     const course= await Course.findByIdAndUpdate(courseId, courseProps);
@@ -61,7 +61,17 @@ module.exports = {
 
   },
   async delete (req, res) {
+    const credential= auth(req);
     const courseId = req.params.id;
+    const courseProps = req.body;
+    // check if the userId exists in the database
+    const user = await User.findById(courseProps.user);
+    if (!user) {
+      return res.status(400).send({message: "There is no such user with given userId."});
+    }
+    if (user.emailAddress!==credential.name){
+      return res.status(403).send({message: "You do not own the requested course."});
+    }
     const course = await Course.findByIdAndRemove(courseId);
     if (!course) {
       return res.status(404).send({message: 'There is no course with the given id'});
